@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SimpleICL · In-context Robot Learning Made Simple</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#151a22; --panel2:#1b212b; --line:#2a323d;
+    --fg:#e6ebf2; --muted:#9aa7b6; --accent:#5ea9ff; --accent2:#7ee0b8;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:16px/1.75 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;}
+  a{color:var(--accent)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  code{background:#0a0d12;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.9em;color:var(--accent2)}
+
+  /* ---- header ---- */
+  header{padding:62px 0 34px;border-bottom:1px solid var(--line);
+    background:radial-gradient(900px 340px at 18% -12%,rgba(94,169,255,.16),transparent 62%);}
+  h1{margin:0 0 10px;font-size:34px;line-height:1.28;letter-spacing:-.4px}
+  .sub{color:var(--muted);font-size:16px}
+  .badges{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+  .badge{font-size:13px;color:var(--accent2);border:1px solid #2f4a44;background:#12201d;
+    border-radius:999px;padding:3px 12px}
+
+  /* ---- top link buttons ---- */
+  .links{margin-top:26px;display:flex;gap:12px;flex-wrap:wrap}
+  .linkbtn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+    font-size:15px;font-weight:600;color:var(--fg);background:var(--panel);
+    border:1px solid var(--line);border-radius:10px;padding:10px 20px;transition:.15s}
+  .linkbtn:hover{border-color:var(--accent);background:#182231;transform:translateY(-1px)}
+  .linkbtn svg{width:17px;height:17px;fill:none;stroke:var(--accent);stroke-width:1.8;
+    stroke-linecap:round;stroke-linejoin:round}
+
+  /* ---- sections ---- */
+  section{padding:44px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:23px;margin:0 0 6px;letter-spacing:-.2px}
+  h2 .n{color:var(--accent);font-weight:600;margin-right:10px;font-variant-numeric:tabular-nums}
+  h3{font-size:17px;margin:26px 0 8px}
+  .lead{color:var(--muted);margin:0 0 20px}
+  p{margin:0 0 14px}
+
+  /* ---- video ---- */
+  .video{margin-top:8px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#000}
+  .video video{display:block;width:100%;aspect-ratio:16/9;background:#05070a}
+  .videonote{font-size:13.5px;color:var(--muted);padding:10px 14px;background:var(--panel2);
+    border-top:1px solid var(--line)}
+  .videonote code{word-break:break-all}
+
+  /* ---- figures ---- */
+  figure{margin:22px 0}
+  figure img{width:100%;display:block;border:1px solid var(--line);border-radius:10px;background:#fff}
+  figcaption{color:var(--muted);font-size:13.5px;margin-top:9px;line-height:1.6}
+  figcaption b{color:var(--fg)}
+
+  /* ---- cards ---- */
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+  .g4{grid-template-columns:repeat(auto-fit,minmax(225px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card h4{margin:0 0 6px;font-size:15.5px;color:var(--accent)}
+  .card p{margin:0;font-size:14.5px;color:#c8d2de}
+  .card.no h4{color:#ff9a9a}
+
+  /* ---- tables ---- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:640px}
+  th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{background:var(--panel2);color:var(--muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  .lvl td{background:#12171f;color:var(--muted);font-weight:600;letter-spacing:.06em}
+  td.ours,th.ours{color:var(--accent2);font-weight:700}
+  table caption{caption-side:bottom;text-align:left;color:var(--muted);font-size:13.5px;
+    padding:10px 12px 0;line-height:1.5}
+
+  /* ---- demo gallery ---- */
+  .demo{margin:0 0 26px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .demorow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .demorow + .demorow{margin-top:8px}
+  .demorow img{width:100%;display:block;border-radius:6px;border:1px solid #333b46;background:#000}
+  .demo figcaption{margin-top:12px}
+  .demolabels{display:flex;justify-content:space-between;color:var(--muted);font-size:12.5px;margin-bottom:6px}
+
+  ul{margin:0 0 14px;padding-left:20px;color:#ccd5e0}
+  li{margin:5px 0}
+  footer{padding:34px 0 60px;color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>In-context Robot Learning Made Simple:<br>A Democratized Recipe for Manipulation Tasks</h1>
+    <!-- ============ TOP LINKS ============ -->
+    <nav class="links">
+      <a class="linkbtn" href="https://github.com/LyBQck/SimpleICL" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/></svg>
+        Paper
+      </a>
+      <a class="linkbtn" href="https://github.com/LyBQck/SimpleICL" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M9 18l-6-6 6-6"/><path d="M15 6l6 6-6 6"/></svg>
+        Code
+      </a>
+      <a class="linkbtn" href="https://github.com/LyBQck/SimpleICL" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+        Data
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ 1. VIDEO ============ -->
+<section id="demo">
+  <div class="wrap">
+    <h2><span class="n">00</span>Task Execution Demo</h2>
+    <p class="lead">Execution of the eight real-world evaluation tasks.</p>
+
+    <div class="video">
+      <!-- Replace VIDEO_SRC with the real media path, e.g. assets/demo.mp4 -->
+      <video id="demoVideo" controls preload="metadata" playsinline
+             src="assets/ICL_v0.1_1.mp4"
+             poster="assets/teaser_v2.png">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. OVERVIEW ============ -->
+<section id="overview">
+  <div class="wrap">
+    <h2><span class="n">01</span>Overview</h2>
+    <p class="lead">Starting from the question of whether a robot can learn a new task by watching a single human demonstration video.</p>
+
+    <figure>
+      <img src="assets/teaser_v2.png" alt="Overview of SimpleICL">
+      <figcaption><b>Overview of SimpleICL.</b> We identify the prompt ambiguity problem in robot ICL
+        and clarify the intrinsic semantics that the model should learn. We further improve task understanding
+        and generalization through efficient data engineering. Our method achieves the best performance across
+        eight evaluation tasks.</figcaption>
+    </figure>
+
+    <p>The paper studies <b>robotic in-context learning (ICL)</b>, an emerging paradigm that enables robots to
+      infer and execute tasks from visual demonstrations. Despite its growing promise, the problem itself remains
+      under-defined: a visual demonstration simultaneously conveys action trajectories, object semantics,
+      manipulation affordances, spatial relations, and task goals, making it unclear what information the robot is
+      actually expected to follow.</p>
+    <p>This work first provides a clear problem definition of robot ICL that explicitly defines its learning target
+      and resolves this fundamental prompt ambiguity. Building on that definition, the authors develop a minimalist
+      and reproducible ICL framework, <b>SimpleICL</b>, with a visual prompt encoder and a low-cost data collection
+      protocol. Without massive pre-training or specialized data infrastructure, the framework achieves strong
+      performance in both simulation and real-world environments.</p>
+  </div>
+</section>
+
+<!-- ============ 3. PROBLEM DEFINITION ============ -->
+<section id="problem">
+  <div class="wrap">
+    <h2><span class="n">02</span>Problem Definition: What Should ICL Learn?</h2>
+    <p class="lead">Because a video conveys an overabundance of information, it often fails to precisely convey the
+      intent of the human demonstration.</p>
+
+    <h3>Four semantic dimensions to learn</h3>
+    <div class="grid g4">
+      <div class="card">
+        <h4>(1) Action Semantics</h4>
+        <p>The model must emulate human behavior at the categorical level of actions, such as grasping, placing,
+          rotating, pressing, and translating.</p>
+      </div>
+      <div class="card">
+        <h4>(2) Compositional Semantics</h4>
+        <p>The model should discern structural compositions and sequential orderings. Executing a rotation prior to
+          picking up an object conveys a semantics fundamentally distinct from picking up the object before rotating it.</p>
+      </div>
+      <div class="card">
+        <h4>(3) Object Semantics</h4>
+        <p>The model must comprehend that it is manipulating a specific object rather than blindly mimicking spatial
+          motion trajectories. If the object's location differs from the demonstration, execution should align with
+          the object's actual pose.</p>
+      </div>
+      <div class="card">
+        <h4>(4) Affordance Semantics</h4>
+        <p>The model should learn <em>how</em> to manipulate an object &mdash; for example, whether to grasp the body
+          of a mug or its handle.</p>
+      </div>
+    </div>
+
+    <h3>What ICL should not learn: required invariances</h3>
+    <div class="grid g2">
+      <div class="card no">
+        <h4>Low-level nuances of human actions</h4>
+        <p>Execution speed, arm morphology, hand appearance, specific grasp angles, and personal reaching habits are
+          treated as irrelevant noise. Extreme positional disparities, however, are treated as distinct semantics.</p>
+      </div>
+      <div class="card no">
+        <h4>Superficial visual scene variations</h4>
+        <p>ICL should be robust to lighting conditions, background colors, and non-target distractor objects.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. DATA ============ -->
+<section id="data">
+  <div class="wrap">
+    <h2><span class="n">03</span>Data Design and Collection Protocol</h2>
+    <p class="lead">Semantic-discriminative data construction paired with a cost-free augmentation strategy.</p>
+
+    <div class="grid g4">
+      <div class="card">
+        <h4>Action-discriminative</h4>
+      </div>
+      <div class="card">
+        <h4>Object-discriminative</h4>
+      </div>
+      <div class="card">
+        <h4>Composition-discriminative</h4>
+      </div>
+      <div class="card">
+        <h4>Affordance-discriminative</h4>
+      </div>
+    </div>
+
+    <figure>
+      <img src="assets/semantic_discriminative_data_3_.png" alt="Four data types constructed for ICL">
+      <figcaption><b>Four data types constructed for ICL based on our problem definition.</b></figcaption>
+    </figure>
+
+    <h3>Data augmentation for desired invariances</h3>
+    <ul>
+      <li><b>Demonstrator invariance</b> &mdash; videos collected across multiple demonstrators, featuring bare hands,
+        different colored gloves, and diverse skin tones.</li>
+      <li><b>Environmental invariance</b> &mdash; lighting, color temperature, and camera viewpoints are systematically
+        varied in the conditioning videos while paired with the same robot execution trajectory.</li>
+    </ul>
+
+    <figure>
+      <img src="assets/data_augmentation.png" alt="Real-world ICL instance construction">
+      <figcaption><b>Schematic illustration of the real-world ICL instance construction.</b></figcaption>
+    </figure>
+
+    <h3>Group-based collection and augmentation strategy</h3>
+    <p>The practical pipeline employs a collection-group-based strategy, where a collection group is a distinct scene
+      coupled with a set of executable tasks within that scene. After completing a collection group, the pipeline
+      transitions to a new group via two types of scene switches: <b>major transitions</b> (a complete change to an
+      entirely new scene) and <b>minor transitions</b> (perturbation-based variations within the existing scene, such
+      as altering object placement, adjusting illumination, or swapping background distractor objects).</p>
+    <p>These minor transitions allow new human-robot data pairs to be constructed with perturbation-based augmentation
+      across groups, enriching the dataset at virtually zero additional collection cost. With this structured design,
+      a single robotic platform can produce up to <b>3,000 valid human-robot data pairs per working day</b>.</p>
+  </div>
+</section>
+
+
+<!-- ============ 5. MODEL ============ -->
+<section id="model">
+  <div class="wrap">
+    <h2><span class="n">04</span>Model: Unified Visual Prompt Encoding Module</h2>
+    <p class="lead">Extracting task-relevant information from the raw human demonstration video while filtering out
+      irrelevant distractors.</p>
+
+    <p>The raw conditioning video is first processed by a pretrained visual encoder (e.g., a ViT or a frozen visual
+      backbone) to produce a sequence of frame-level embeddings, which are then flattened and projected into a shared
+      latent space. Next, a small set of learnable <b>context tokens</b> is introduced. Through a <b>cross-attention</b>
+      mechanism, these tokens iteratively query the video embedding sequence, attending to the most task-relevant
+      spatiotemporal cues while suppressing background noise and irrelevant hand movements. The final output is a compact
+      set of conditioned token embeddings, which are concatenated into the context of both the video and action DiTs
+      and fed into the network via cross-attention, resulting in the final conditional policy.</p>
+
+    <div class="grid g2">
+      <div class="card">
+        <h4>Arbitrary-length support</h4>
+        <p>The number of context tokens remains fixed regardless of video duration, enabling natural extension to
+          long-horizon tasks.</p>
+      </div>
+      <div class="card">
+        <h4>Task-relevant focus</h4>
+        <p>The attention-based querying mechanism explicitly suppresses distractors (hand appearance, background
+          clutter) and attends to actions, temporal order, and object identities.</p>
+      </div>
+      <div class="card">
+        <h4>End-to-end optimization</h4>
+        <p>The entire module is jointly differentiable with the downstream policy, avoiding brittle heuristic key-frame
+          selection and ensuring coherent co-adaptation.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ 6. SIMULATION ============ -->
+<section id="sim">
+  <div class="wrap">
+    <h2><span class="n">05</span>Simulation Experiments</h2>
+    <p class="lead">RoboTwin 2.0, with AgileX serving as both the demonstrator and the executor.</p>
+
+    <p>The native RoboTwin benchmark follows a task-centric data production paradigm. However, this paradigm cannot
+      effectively evaluate the capability of ICL, as unrelated objects outside the action area do not constitute genuine
+      task ambiguity. The proposed pipeline instead first constructs a scene in which multiple task-relevant objects are
+      simultaneously present within the reachable areas, and then collects multiple tasks under diverse object placements.
+      This yields <b>18,000 demonstrations</b> for training, alongside 27,500 native RoboTwin demonstrations.</p>
+
+    <figure>
+      <img src="assets/sim.png" alt="Native RoboTwin data versus ICL-oriented data">
+      <figcaption><b>Native RoboTwin data versus proposed ICL-oriented data.</b> In the former, objects other than
+        task-relevant objects are placed away from the central region of the scene; in the latter, most objects within
+        the scene are reachable and can potentially serve as task-relevant objects.</figcaption>
+    </figure>
+
+    <h3>Visual ambiguity test</h3>
+    <p>Using the ICL-oriented data pipeline, partial RoboTwin tasks are combined to form the visual ambiguity test.
+      The table below reports the average success rate (%) on this test.</p>
+
+    <div class="tablewrap">
+      <table style="min-width:460px">
+        <caption>Simulation evaluation results on the visual ambiguity test of RoboTwin tasks.</caption>
+        <thead>
+          <tr><th>Model</th><th>Trained on</th><th>Average</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Fast-WAM</td><td>Native</td><td>37.6</td></tr>
+          <tr><td class="ours">SimpleICL (Ours)</td><td>Native</td><td>40.3</td></tr>
+          <tr><td class="ours">SimpleICL (Ours)</td><td>ICL-oriented</td><td class="ours">72.1</td></tr>
+          <tr><td>w/o. video cond.</td><td>ICL-oriented</td><td>61.6</td></tr>
+          <tr><td>w/o. future pred.</td><td>ICL-oriented</td><td>20.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Novel (OOD) simulation tasks</h3>
+    <p>Seven novel tasks are designed for simulation evaluation that are neither natively supported by RoboTwin nor
+      present in the training set.</p>
+
+    <figure>
+      <img src="assets/sim_ood_task.png" alt="Novel OOD tasks for simulation evaluation">
+      <figcaption><b>Novel (OOD) tasks for simulation evaluation.</b> From left to right: Put Toycar in Plasticbox,
+        Put Cup in Basket, Touch Toycar, Place Playingcards Plate, Close Laptop, Move Block on Pad, and
+        Place Mouse in Bowl.</figcaption>
+    </figure>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Task</th><th>Fast-WAM</th><th class="ours">Ours</th><th>w/o. VC</th><th>w/o. FP</th></tr></thead>
+        <tbody>
+          <tr><td>Cup_Basket</td><td>18.2</td><td class="ours">72.7</td><td>45.5</td><td>18.2</td></tr>
+          <tr><td>Touch_Toycar</td><td>8.3</td><td class="ours">58.3</td><td>8.3</td><td>0.0</td></tr>
+          <tr><td>Mouse_Bowl</td><td>25.7</td><td class="ours">63.3</td><td>20.0</td><td>16.7</td></tr>
+          <tr><td>Block_Pad</td><td>3.3</td><td class="ours">50.0</td><td>13.3</td><td>3.3</td></tr>
+          <tr><td>Close_Laptop</td><td>33.3</td><td class="ours">63.3</td><td>13.3</td><td>23.3</td></tr>
+          <tr><td>Toycar_Box</td><td>40.0</td><td class="ours">90.0</td><td>36.7</td><td>16.7</td></tr>
+          <tr><td>Cards_Plate</td><td>43.3</td><td class="ours">63.3</td><td>46.7</td><td>36.7</td></tr>
+          <tr><td><b>Average</b></td><td>24.6</td><td class="ours">65.9</td><td>26.3</td><td>17.9</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13.5px;color:var(--muted);margin-top:10px">
+      Success rates (%) on novel OOD simulation tasks. VC = video conditioning, FP = future prediction.
+    </p>
+
+    <h3>Findings</h3>
+    <ul>
+      <li><b>ICL-oriented data helps resolve visual ambiguity.</b> The model trained on ICL-oriented data achieves higher
+        success rates under visual ambiguity even without video conditioning, indicating that the data alone provides a
+        certain ability to resolve visual ambiguity.</li>
+      <li><b>Video conditioning enables in-context learning of novel tasks.</b> While the model without video conditioning
+        performs reasonably well on visual ambiguity, its performance drops sharply on novel OOD tasks, indicating that
+        video conditioning enables the model to leverage demonstrations for unseen tasks.</li>
+      <li><b>Future prediction is crucial for effective video-conditioned ICL.</b> Removing future prediction causes
+        substantial drops on both visual ambiguity and OOD tasks, from 72.1% to 20.2% and from 65.9% to 17.9%,
+        respectively.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 7. REAL WORLD ============ -->
+<section id="exp">
+  <div class="wrap">
+    <h2><span class="n">06</span>Real-World Experiments</h2>
+    <p class="lead">Eight unseen tasks across three difficulty levels.</p>
+
+    <p>Evaluation is conducted at three difficulty levels: <b>Easy</b>, where a single executable task is present;
+      <b>Medium</b>, where multiple executable tasks require discrimination; and <b>Hard</b>, where multiple valid
+      execution modes exist.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Level</th><th>Method</th>
+            <th>Weighing</th><th>Wipe</th><th>Tea</th><th>Drawer</th>
+            <th>Soap</th><th>Fruit</th><th>Chopsticks</th><th>Shelf</th><th>Average</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="lvl"><td colspan="10">Easy</td></tr>
+          <tr><td></td><td>Fast-WAM</td><td>0.90</td><td>0.87</td><td>0.83</td><td>0.80</td><td>0.63</td><td>0.90</td><td>0.73</td><td>0.77</td><td>0.80</td></tr>
+          <tr><td></td><td>&pi;<sub>0.5</sub></td><td>0.87</td><td>0.97</td><td>0.80</td><td>0.60</td><td>0.73</td><td>0.60</td><td>0.53</td><td>0.67</td><td>0.72</td></tr>
+          <tr><td></td><td class="ours">SimpleICL (ours)</td><td>0.93</td><td>0.76</td><td>0.73</td><td>0.83</td><td>0.73</td><td>0.86</td><td>0.80</td><td>0.83</td><td class="ours">0.81</td></tr>
+          <tr class="lvl"><td colspan="10">Medium</td></tr>
+          <tr><td></td><td>Fast-WAM</td><td>0.83</td><td>0.50</td><td>0.63</td><td>0.43</td><td>0.60</td><td>0.83</td><td>0.63</td><td>0.73</td><td>0.65</td></tr>
+          <tr><td></td><td>&pi;<sub>0.5</sub></td><td>0.63</td><td>0.46</td><td>0.37</td><td>0.43</td><td>0.57</td><td>0.47</td><td>0.23</td><td>0.57</td><td>0.47</td></tr>
+          <tr><td></td><td class="ours">SimpleICL (ours)</td><td>0.83</td><td>0.66</td><td>0.60</td><td>0.80</td><td>0.67</td><td>0.63</td><td>0.73</td><td>0.63</td><td class="ours">0.70</td></tr>
+          <tr class="lvl"><td colspan="10">Hard</td></tr>
+          <tr><td></td><td>Fast-WAM</td><td>0.40</td><td>0.60</td><td>0.27</td><td>0.53</td><td>0.33</td><td>0.57</td><td>0.27</td><td>0.37</td><td>0.42</td></tr>
+          <tr><td></td><td>&pi;<sub>0.5</sub></td><td>0.53</td><td>0.33</td><td>0.20</td><td>0.17</td><td>0.47</td><td>0.40</td><td>0.10</td><td>0.30</td><td>0.31</td></tr>
+          <tr><td></td><td class="ours">SimpleICL (ours)</td><td>0.80</td><td>0.67</td><td>0.57</td><td>0.67</td><td>0.63</td><td>0.70</td><td>0.76</td><td>0.60</td><td class="ours">0.68</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13.5px;color:var(--muted);margin-top:10px">
+      Real-world evaluation on eight unseen tasks. Success rates (%) are reported for each method.
+      Wipe = wiping a plate; Tea = serving tea; Drawer = pulling a drawer; Soap = pressing a soap dispenser;
+      Fruit = placing fruit; Chopsticks = organizing chopsticks and bowls; Shelf = organizing items on a shelf.
+    </p>
+
+    <figure>
+      <img src="assets/attention_viz.png" alt="Attention visualization">
+      <figcaption><b>Attention visualization.</b> (a) Initially, attention is only on human hands; (b) peaks occur twice,
+        at first hand-object contact and at task completion; (c) intermediate-stage attention follows hand and object
+        motion with moderate intensity. The model exhibits temporally structured and interaction-centric attention.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<script>
+  // Degrade gracefully when the video path has not been filled in yet.
+  (function () {
+    var v = document.getElementById('demoVideo');
+    if (v && (!v.getAttribute('src') || v.getAttribute('src') === 'VIDEO_SRC')) {
+      v.removeAttribute('src');
+      v.style.background = '#05070a';
+    }
+  })();
+</script>
+</body>
+</html>
